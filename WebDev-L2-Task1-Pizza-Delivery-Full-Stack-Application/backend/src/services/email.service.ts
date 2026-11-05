@@ -1,8 +1,9 @@
-import { emailConfig } from "../configs/email.js";
+import { emailConfig } from "../configs/email";
+import { constants } from "../configs/constants";
 
 export const sendEmail = async (to: string, subject: string, text: string) => {
   const mail = await emailConfig.sendMail({
-    from: emailConfig.options.auth?.user,
+    from: constants.EMAIL_FROM || constants.EMAIL_USER,
     to,
     subject,
     text,

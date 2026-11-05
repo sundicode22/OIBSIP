@@ -1,8 +1,8 @@
-import { prisma } from "../configs/index.js";
 import {
+  prisma,
   PizzaCreateInput,
   PizzaUpdateInput,
-} from "../../generated/prisma/client";
+} from "../configs";
 
 export const getPizzaById = async (id: string) => {
   const pizza = await prisma.pizza.findUnique({

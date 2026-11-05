@@ -1,10 +1,11 @@
-import { prisma } from "../configs/index.js";
 import {
+  prisma,
   IngredientCreateInput,
   IngredientUpdateInput,
   IngredientTypeCreateInput,
   IngredientTypeUpdateInput,
-} from "../../generated/prisma/client";
+} from "../configs";
+
 export const getIngredientById = async (id: string) => {
   const ingredient = await prisma.ingredient.findUnique({
     where: { id },

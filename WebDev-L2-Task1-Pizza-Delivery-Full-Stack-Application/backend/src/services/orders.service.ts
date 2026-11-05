@@ -1,7 +1,10 @@
-import { prisma } from "../configs/index.js";
-import { OrderCreateInput } from "../../generated/prisma/client";
-import { OrderStatus } from "../../generated/prisma/enums.js";
-import { OrderUpdateInput } from "../../generated/prisma/models.js";
+import {
+  prisma,
+  OrderCreateInput,
+  OrderStatus,
+  OrderUpdateInput,
+} from "../configs";
+
 export const getOrderById = async (id: string) => {
   const order = await prisma.order.findUnique({
     where: { id },
@@ -63,7 +66,6 @@ export const getOrders = async (
   const count = await prisma.order.count({
     skip: (page - 1) * limit,
     take: limit,
-
     orderBy: {
       [sortBy]: sort,
     },
@@ -72,7 +74,6 @@ export const getOrders = async (
       OR: [
         { id: { contains: search, mode: "insensitive" } },
         { userId: { contains: search, mode: "insensitive" } },
-        { status: { contains: search, mode: "insensitive" } },
       ],
     },
   });
@@ -90,7 +91,6 @@ export const getOrders = async (
       OR: [
         { id: { contains: search, mode: "insensitive" } },
         { userId: { contains: search, mode: "insensitive" } },
-        { status: { contains: search, mode: "insensitive" } },
       ],
     },
   });
@@ -108,7 +108,6 @@ export const getOrdersCount = async (search: string) => {
       OR: [
         { id: { contains: search, mode: "insensitive" } },
         { userId: { contains: search, mode: "insensitive" } },
-        { status: { contains: search, mode: "insensitive" } },
       ],
     },
   });

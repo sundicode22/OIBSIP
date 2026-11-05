@@ -1,8 +1,8 @@
-import { prisma } from "../configs/index.js";
 import {
+  prisma,
   AddressCreateInput,
   AddressUpdateInput,
-} from "../../generated/prisma/client";
+} from "../configs";
 
 export const getAddressById = async (id: string) => {
   const address = await prisma.address.findUnique({
@@ -27,19 +27,4 @@ export const updateAddress = async (
     data: address,
   });
   return updatedAddress;
-};
-
-export const deleteAddress = async (id: string) => {
-  const deletedAddress = await prisma.address.delete({
-    where: { id },
-  });
-
-  return deletedAddress;
-};
-
-export const getAddressesByUserId = async (userId: string) => {
-  const addresses = await prisma.address.findMany({
-    where: { userId },
-  });
-  return addresses;
 };

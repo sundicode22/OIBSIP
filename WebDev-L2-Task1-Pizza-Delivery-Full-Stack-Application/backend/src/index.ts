@@ -1,6 +1,10 @@
-import { createApp } from "./app.js";
-import { constants } from "./configs/constants.js";
+import { createApp } from "./app";
+import { constants } from "./configs/constants";
+import { initScheduledJobs } from "./jobs/inventory.job";
 
-createApp().listen(constants.PORT, () => {
+const app = createApp();
+
+app.listen(constants.PORT, () => {
   console.log(`Server is running on port ${constants.PORT}`);
+  initScheduledJobs();
 });

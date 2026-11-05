@@ -1,1 +1,4 @@
-export * from "./auth.schema.js";
+export * from "./auth.schema";
+export * from "./pizza.schema";
+export * from "./ingredient.schema";
+export * from "./order.schema";

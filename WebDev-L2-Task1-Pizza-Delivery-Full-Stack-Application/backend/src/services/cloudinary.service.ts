@@ -1,11 +1,11 @@
-import { Multer } from "multer";
-import { cloudinaryConfig } from "../configs/cloudinary.js";
+import "multer";
+import { cloudinary } from "../configs/cloudinary";
 
 export const uploadImage = async (image: Express.Multer.File) => {
-  const result = await cloudinaryConfig.uploader.upload(image.path);
+  const result = await cloudinary.uploader.upload(image.path);
   return result.secure_url;
 };
 
 export const deleteImage = async (publicId: string) => {
-  await cloudinaryConfig.uploader.destroy(publicId);
+  await cloudinary.uploader.destroy(publicId);
 };
