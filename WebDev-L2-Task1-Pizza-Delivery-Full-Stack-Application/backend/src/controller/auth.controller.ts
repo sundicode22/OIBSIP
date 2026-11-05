@@ -25,7 +25,9 @@ import { Roles } from "../configs";
 
 export const register = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const { email, password, name, phone } = await registerSchema.parseAsync(req.body);
+    const { email, password, name, phone } = await registerSchema.parseAsync(
+      req.body,
+    );
 
     const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
@@ -63,7 +65,11 @@ export const register = expressAsyncHandler(
 
 export const verifyEmail = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const token = (Array.isArray(req.params.token) ? req.params.token[0] : req.params.token || req.query.token) as string;
+    const token = (
+      Array.isArray(req.params.token)
+        ? req.params.token[0]
+        : req.params.token || req.query.token
+    ) as string;
     await verifyEmailSchema.parseAsync({ token });
 
     const user = await userService.verifyEmailToken(token);
@@ -164,7 +170,10 @@ export const forgotPassword = expressAsyncHandler(
       throw new NotFoundError("User with this email was not found");
     }
 
-    const result = await userService.forgotPassword(existingUser.id, existingUser.email);
+    const result = await userService.forgotPassword(
+      existingUser.id,
+      existingUser.email,
+    );
     successResponse(res, 200, result, "Password reset link sent to your email");
   },
 );
