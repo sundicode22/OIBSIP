@@ -34,6 +34,10 @@ export const register = expressAsyncHandler(
       throw new ConflictError("An account with this email already exists");
     }
 
+    if (phone && (await userService.getUserByPhone(phone))) {
+      throw new ConflictError("An account with this phone number already exists");
+    }
+
     const hashedPassword = await hashPassword(password);
     const newUser = await userService.createUser({
       email,
@@ -170,11 +174,8 @@ export const forgotPassword = expressAsyncHandler(
       throw new NotFoundError("User with this email was not found");
     }
 
-    const result = await userService.forgotPassword(
-      existingUser.id,
-      existingUser.email,
-    );
-    successResponse(res, 200, result, "Password reset link sent to your email");
+    await userService.forgotPassword(existingUser.id, existingUser.email);
+    successResponse(res, 200, null, "Password reset link sent to your email");
   },
 );
 

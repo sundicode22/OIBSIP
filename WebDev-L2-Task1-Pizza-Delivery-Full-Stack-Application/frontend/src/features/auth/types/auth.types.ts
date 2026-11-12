@@ -1,14 +1,12 @@
-export interface AuthUser {
-  id: string | number;
-  name: string;
-  email: string;
-  role?: string;
-  isEmailVerified?: boolean;
-}
+import type { SessionUser } from "@/types/domain";
 
 export interface AuthResponse {
   token: string;
-  user: AuthUser;
+  user: SessionUser;
+}
+
+export interface RegisteredUser extends SessionUser {
+  isEmailVerified: boolean;
 }
 
 export interface RegisterPayload {
@@ -30,11 +28,4 @@ export interface ForgotPasswordPayload {
 export interface ResetPasswordPayload {
   token: string;
   password: string;
-}
-
-export interface ApiResponse<T = unknown> {
-  status: boolean | string;
-  statusCode: number;
-  message?: string;
-  data?: T;
 }

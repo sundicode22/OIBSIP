@@ -16,6 +16,12 @@ export const getUserByEmail = async (email: string) => {
   });
 };
 
+export const getUserByPhone = async (phone: string) => {
+  return prisma.user.findFirst({
+    where: { phone },
+  });
+};
+
 export const createUser = async (user: UserCreateInput) => {
   return prisma.user.create({
     data: user,

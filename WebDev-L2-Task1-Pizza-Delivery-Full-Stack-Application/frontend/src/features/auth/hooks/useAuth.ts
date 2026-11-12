@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi } from "../api/auth.api";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { session } from "@/lib/session";
+import { authApi } from "../api/auth.api";
 import type {
+  ForgotPasswordPayload,
   LoginPayload,
   RegisterPayload,
-  ForgotPasswordPayload,
   ResetPasswordPayload,
 } from "../types/auth.types";
 
@@ -12,16 +14,10 @@ export function useLogin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: LoginPayload) => authApi.login(payload),
-    onSuccess: (res) => {
-      if (res.data?.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-        toast.success(`Welcome back, ${res.data.user.name || "User"}!`);
-      }
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Login failed. Please check your credentials.");
+    onSuccess: ({ data }) => {
+      queryClient.clear();
+      session.set(data.token, data.user);
+      toast.success(`Welcome back, ${data.user.name}!`);
     },
   });
 }
@@ -30,16 +26,10 @@ export function useAdminLogin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: LoginPayload) => authApi.adminLogin(payload),
-    onSuccess: (res) => {
-      if (res.data?.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-        toast.success("Admin authorized successfully!");
-      }
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Admin authorization rejected.");
+    onSuccess: ({ data }) => {
+      queryClient.clear();
+      session.set(data.token, data.user);
+      toast.success(`Signed in as administrator ${data.user.name}`);
     },
   });
 }
@@ -47,58 +37,36 @@ export function useAdminLogin() {
 export function useRegister() {
   return useMutation({
     mutationFn: (payload: RegisterPayload) => authApi.register(payload),
-    onSuccess: (res) => {
-      toast.success(res.message || "Registration successful! Please verify your email.");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Registration failed. Please try again.");
-    },
   });
 }
 
 export function useVerifyEmail() {
   return useMutation({
     mutationFn: (token: string) => authApi.verifyEmail(token),
-    onSuccess: (res: any) => {
-      toast.success(res?.message || "Email verified successfully!");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Verification failed or token expired.");
-    },
   });
 }
 
 export function useForgotPassword() {
   return useMutation({
     mutationFn: (payload: ForgotPasswordPayload) => authApi.forgotPassword(payload),
-    onSuccess: () => {
-      toast.info("Password reset instructions dispatched to your email.");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Unable to send password reset link.");
-    },
   });
 }
 
 export function useResetPassword() {
   return useMutation({
     mutationFn: (payload: ResetPasswordPayload) => authApi.resetPassword(payload),
-    onSuccess: () => {
-      toast.success("Password updated successfully! Redirecting...");
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to reset password.");
-    },
+    onSuccess: () => toast.success("Password updated. Please sign in."),
   });
 }
 
 export function useLogout() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   return () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    const wasAdmin = session.getUser()?.role === "ADMIN";
+    session.clear();
     queryClient.clear();
     toast.info("You have been signed out.");
-    window.location.href = "/login";
+    navigate(wasAdmin ? "/admin-login" : "/login", { replace: true });
   };
 }

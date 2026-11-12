@@ -1,11 +1,19 @@
-// Query key factory — keeps keys consistent across hooks
 export const queryKeys = {
-  users: {
-    all: ["users"] as const,
-    lists: () => [...queryKeys.users.all, "list"] as const,
-    list: (filters?: Record<string, unknown>) =>
-      [...queryKeys.users.lists(), filters] as const,
-    details: () => [...queryKeys.users.all, "detail"] as const,
-    detail: (id: number) => [...queryKeys.users.details(), id] as const,
+  health: ["health"] as const,
+  pizzas: {
+    all: ["pizzas"] as const,
+    detail: (id: string) => ["pizzas", id] as const,
   },
+  ingredients: {
+    all: ["ingredients"] as const,
+    types: ["ingredients", "types"] as const,
+  },
+  orders: {
+    all: ["orders"] as const,
+    mine: ["orders", "mine"] as const,
+    detail: (id: string) => ["orders", "detail", id] as const,
+    admin: (filters: { status?: string; page: number; limit: number }) =>
+      ["orders", "admin", filters] as const,
+  },
+  inventory: ["inventory"] as const,
 } as const;

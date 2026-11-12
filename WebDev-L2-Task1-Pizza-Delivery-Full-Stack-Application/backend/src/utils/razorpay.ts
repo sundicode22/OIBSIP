@@ -2,6 +2,9 @@ import crypto from "node:crypto";
 import Razorpay from "razorpay";
 import { constants } from "../configs/constants";
 
+export const isRazorpaySimulated =
+  constants.RAZORPAY_KEY_ID === "rzp_test_sample_key";
+
 let razorpayInstance: Razorpay | null = null;
 
 try {
@@ -33,7 +36,7 @@ export const createRazorpayOrder = async (
 ): Promise<RazorpayOrderResult> => {
   const amountInPaise = Math.round(params.amount * 100);
 
-  if (razorpayInstance && constants.RAZORPAY_KEY_ID !== "rzp_test_sample_key") {
+  if (razorpayInstance && !isRazorpaySimulated) {
     const order = await razorpayInstance.orders.create({
       amount: amountInPaise,
       currency: params.currency || "INR",
@@ -65,8 +68,10 @@ export const verifyRazorpaySignature = (
   signature: string,
   secret = constants.RAZORPAY_KEY_SECRET,
 ): boolean => {
-  // In development test mode, allow "test_signature" or real HMAC
-  if (signature === "test_signature" || signature === "simulated_success") {
+  if (
+    isRazorpaySimulated &&
+    (signature === "test_signature" || signature === "simulated_success")
+  ) {
     return true;
   }
 

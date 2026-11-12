@@ -68,7 +68,7 @@ src/
 - **shadcn Sidebar-07 Pattern**: Collapsible sidebar with group headers, expandable states, tooltips, responsive toggle triggers, and profile actions.
 - **shadcn Table System**: Composable, accessible table components featuring real-time client-side search filtering, column sorting, and responsive view switcher (Table vs. Cards).
 - **Comprehensive Auth Suite**: Full coverage of the backend auth lifecycle including user login, admin role portal, user registration, email token verification, forgot-password requests, and password reset forms.
-- **Optimistic Caching & Mutations**: Deleting or modifying records reflects immediately on UI cache with automatic rollbacks on network failure.
+- **Cache Updates After Mutations**: After a successful delete, the record is removed from the cached list without refetching.
 - **JWT & Interceptor Automation**: Local storage auth sync and automatic `401 Unauthorized` redirect handling.
 
 ---
@@ -76,8 +76,7 @@ src/
 ## 📁 Project Structure
 
 ```bash
-my-app/
-├── public/                      # Static assets
+frontend/
 ├── src/
 │   ├── components/
 │   │   ├── layouts/
@@ -188,7 +187,7 @@ sequenceDiagram
 - Accessible semantic markup: `<table>`, `<thead>`, `<tbody>`, `<th>`, `<td>`.
 - Live client-side keyword search across `name`, `email`, and `company`.
 - Ascending/Descending column sorting via `ArrowUpDown`.
-- Direct action triggers with optimistic deletion feedback.
+- Delete actions with toast feedback.
 
 ---
 
@@ -202,7 +201,7 @@ sequenceDiagram
 
 1. **Navigate to the project root:**
    ```bash
-   cd my-app
+   cd WebDev-L2-Task1-Pizza-Delivery-Full-Stack-Application/frontend
    ```
 
 2. **Install dependencies:**
@@ -229,10 +228,12 @@ Create a `.env` file in the project root:
 
 ```env
 # URL for the Pizza Delivery backend API
-VITE_API_BASE_URL=https://jsonplaceholder.typicode.com
+VITE_API_BASE_URL=http://localhost:4000/api
 ```
 
-*Note: In development, you can point `VITE_API_BASE_URL` to your local backend server (e.g. `http://localhost:5000/api`).*
+*Note: `.env.example` and the fallback in `src/lib/axios.ts` still point at the placeholder API `https://jsonplaceholder.typicode.com`, which only the demo `users` feature works with. Point it at the local backend (port 4000) to use the auth screens.*
+
+The `users` feature is a template that calls `/users`, an endpoint the real backend does not have. For the overall project docs see [`/docs`](../../docs/getting-started.md).
 
 ---
 
@@ -255,6 +256,3 @@ VITE_API_BASE_URL=https://jsonplaceholder.typicode.com
 
 ---
 
-<div align="center">
-  <sub>Engineered with precision for full-stack excellence.</sub>
-</div>

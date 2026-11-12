@@ -40,14 +40,14 @@ export const deleteIngredient = async (id: string) => {
 
 export const getIngredientsByOrderId = async (orderId: string) => {
   const ingredients = await prisma.ingredient.findMany({
-    where: { orderId },
+    where: { orderIds: { has: orderId } },
   });
   return ingredients;
 };
 
 export const getIngredientsByPizzaId = async (pizzaId: string) => {
   const ingredients = await prisma.ingredient.findMany({
-    where: { pizzaId },
+    where: { pizzaIds: { has: pizzaId } },
   });
   return ingredients;
 };

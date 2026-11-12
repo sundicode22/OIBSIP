@@ -1,40 +1,43 @@
 import { apiClient } from "@/lib/axios";
+import type { ApiResponse } from "@/lib/api";
 import type {
   AuthResponse,
+  ForgotPasswordPayload,
   LoginPayload,
   RegisterPayload,
-  ForgotPasswordPayload,
+  RegisteredUser,
   ResetPasswordPayload,
-  ApiResponse,
 } from "../types/auth.types";
 
 export const authApi = {
-  login: async (payload: LoginPayload): Promise<ApiResponse<AuthResponse>> => {
+  login: async (payload: LoginPayload) => {
     const { data } = await apiClient.post<ApiResponse<AuthResponse>>("/auth/login", payload);
     return data;
   },
 
-  adminLogin: async (payload: LoginPayload): Promise<ApiResponse<AuthResponse>> => {
+  adminLogin: async (payload: LoginPayload) => {
     const { data } = await apiClient.post<ApiResponse<AuthResponse>>("/auth/admin-login", payload);
     return data;
   },
 
-  register: async (payload: RegisterPayload): Promise<ApiResponse<AuthResponse>> => {
-    const { data } = await apiClient.post<ApiResponse<AuthResponse>>("/auth/register", payload);
+  register: async (payload: RegisterPayload) => {
+    const { data } = await apiClient.post<ApiResponse<RegisteredUser>>("/auth/register", payload);
     return data;
   },
 
-  verifyEmail: async (token: string): Promise<ApiResponse<unknown>> => {
-    const { data } = await apiClient.get<ApiResponse<unknown>>(`/auth/verify-email/${token}`);
+  verifyEmail: async (token: string) => {
+    const { data } = await apiClient.get<ApiResponse<unknown>>(
+      `/auth/verify-email/${encodeURIComponent(token)}`,
+    );
     return data;
   },
 
-  forgotPassword: async (payload: ForgotPasswordPayload): Promise<ApiResponse<unknown>> => {
-    const { data } = await apiClient.post<ApiResponse<unknown>>("/auth/forgot-password", payload);
+  forgotPassword: async (payload: ForgotPasswordPayload) => {
+    const { data } = await apiClient.post<ApiResponse<null>>("/auth/forgot-password", payload);
     return data;
   },
 
-  resetPassword: async (payload: ResetPasswordPayload): Promise<ApiResponse<unknown>> => {
+  resetPassword: async (payload: ResetPasswordPayload) => {
     const { data } = await apiClient.post<ApiResponse<unknown>>("/auth/reset-password", payload);
     return data;
   },

@@ -1,14 +1,19 @@
+import { Compass } from "lucide-react";
 import { Link } from "react-router-dom";
+import { EmptyState } from "@/components/shared/QueryState";
 import { Button } from "@/components/ui/button";
 
 export function NotFoundPage() {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-      <h1 className="text-6xl font-extrabold">404</h1>
-      <p className="text-muted-foreground">Page not found</p>
-      <Button asChild variant="outline">
-        <Link to="/">Go home</Link>
-      </Button>
-    </div>
+    <EmptyState
+      icon={Compass}
+      title="Page not found"
+      description="The page you're looking for doesn't exist or has moved."
+      action={
+        <Button asChild>
+          <Link to="/">Back to dashboard</Link>
+        </Button>
+      }
+    />
   );
 }

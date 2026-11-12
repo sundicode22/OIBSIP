@@ -3,7 +3,7 @@ import expressAsyncHandler from "express-async-handler";
 import { prisma, OrderStatus } from "../configs";
 import { constants } from "../configs/constants";
 import { updateStockSchema, updateOrderStatusSchema } from "../schema";
-import { successResponse, NotFoundError } from "../utils";
+import { successResponse, NotFoundError, ValidationError } from "../utils";
 
 export const getInventoryDashboard = expressAsyncHandler(
   async (_req: Request, res: Response) => {
@@ -77,6 +77,11 @@ export const getAllOrders = expressAsyncHandler(
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || 20;
 
+    if (status && !Object.values(OrderStatus).includes(status as OrderStatus)) {
+      throw new ValidationError("Invalid order status filter", [
+        { field: "status", message: `Unknown status "${String(status)}"` },
+      ]);
+    }
     const where = status ? { status: status as OrderStatus } : {};
 
     const [total, orders] = await Promise.all([

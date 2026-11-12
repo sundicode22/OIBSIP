@@ -35,7 +35,7 @@ export const deletePizza = async (id: string) => {
 
 export const getPizzasByOrderId = async (orderId: string) => {
   const pizzas = await prisma.pizza.findMany({
-    where: { orderId },
+    where: { orderIds: { has: orderId } },
   });
   return pizzas;
 };

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
-import { prisma, OrderStatus, PaymentStatus } from "../configs";
+import { prisma, OrderStatus, PaymentStatus, Roles } from "../configs";
 import { constants } from "../configs/constants";
 import { createOrderSchema, verifyPaymentSchema } from "../schema";
 import {
@@ -10,6 +10,7 @@ import {
   UnauthorizedError,
   createRazorpayOrder,
   verifyRazorpaySignature,
+  isRazorpaySimulated,
 } from "../utils";
 
 export const createOrder = expressAsyncHandler(
@@ -148,6 +149,7 @@ export const createOrder = expressAsyncHandler(
           orderId: razorpayOrder.id,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
+          simulated: isRazorpaySimulated,
         },
       },
       "Order created. Please proceed to payment.",
@@ -168,8 +170,12 @@ export const verifyPayment = expressAsyncHandler(
       where: { id: orderId },
     });
 
-    if (!order) {
+    if (!order || order.userId !== req.user.id) {
       throw new NotFoundError("Order not found");
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestError("This order has already been paid for");
     }
 
     // Verify Razorpay signature
@@ -251,7 +257,9 @@ export const getOrderById = expressAsyncHandler(
       },
     });
 
-    if (!order) {
+    const isOwner = order?.userId === req.user?.id;
+    const isAdmin = req.user?.role === Roles.ADMIN;
+    if (!order || (!isOwner && !isAdmin)) {
       throw new NotFoundError("Order not found");
     }
 
