@@ -6,23 +6,6 @@ This document explains how the system is put together: the big pieces, how a req
 
 ## System overview
 
-```mermaid
-flowchart LR
-    Browser["React SPA<br/>(Vite, port 5173)"]
-    API["Express API<br/>(port 4000, /api)"]
-    DB[(MongoDB)]
-    SMTP["SMTP server"]
-    RZP["Razorpay"]
-    CDN["Cloudinary"]
-    Cron["node-cron<br/>hourly job"]
-
-    Browser -- "JSON over HTTP<br/>Bearer JWT" --> API
-    API -- Prisma --> DB
-    API -- Nodemailer --> SMTP
-    API -- "create order" --> RZP
-    API -. "not wired yet" .-> CDN
-    Cron -- "runs inside the API process" --> API
-```
 
 - The **frontend** is a single-page app. It never talks to the database; everything goes through the REST API.
 - The **backend** is a single Express process. It also hosts the scheduled low-stock job, so the job only runs while the API is running.
@@ -71,30 +54,6 @@ In practice the split is not yet strict: the auth controller goes through `userS
 
 Here is what happens when an admin updates an order's status with `PATCH /api/admin/orders/:id/status`:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant C as Client
-    participant A as app.ts
-    participant R as admin.routes.ts
-    participant M as auth.middleware.ts
-    participant Ctl as admin.controller.ts
-    participant Z as Zod schema
-    participant P as Prisma
-    participant E as error.middleware.ts
-
-    C->>A: PATCH /api/admin/orders/123/status
-    A->>A: cors → morgan (logging) → express.json (parse body)
-    A->>R: rootRouter forwards /admin/*
-    R->>M: requireAuth – verify JWT, set req.user
-    R->>M: requireRoles(ADMIN) – check req.user.role
-    R->>Ctl: updateOrderStatus
-    Ctl->>Z: updateOrderStatusSchema.parseAsync(body)
-    Ctl->>P: order.findUnique / order.update
-    Ctl-->>C: 200 { success: true, data, message }
-    Note over M,E: Any error thrown at any step is caught<br/>and sent to the global error handler
-    E-->>C: 4xx/5xx { success: false, message, errors? }
-```
 
 ### Cross-cutting conventions
 
@@ -122,27 +81,6 @@ sequenceDiagram
 
 #### Ordering and payment
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant U as User
-    participant API as Backend
-    participant DB as MongoDB
-    participant RZP as Razorpay
-
-    U->>API: POST /orders (address + pizzaIds or customPizza)
-    API->>DB: create Address
-    API->>DB: load pizzas/ingredients, check stock ≥ 1
-    API->>DB: transaction: decrement each ingredient's stock by 1, create Order (PENDING)
-    API->>RZP: create Razorpay order (or simulate in test mode)
-    API-->>U: order + summary + razorpay { keyId, orderId, amount }
-    U->>RZP: pays in Razorpay Checkout
-    U->>API: POST /orders/verify (razorpay ids + signature)
-    API->>API: verify HMAC-SHA256 signature
-    API->>DB: transaction: create Payment (COMPLETED), set Order → CONFIRMED
-    API-->>U: confirmed order
-```
-
 Pricing: a menu order costs the sum of the selected pizzas' prices. A custom pizza costs a fixed ₹250 plus ₹30 per vegetable.
 
 Stock is decremented when the order is **created**, before payment, and is not given back if the payment never happens.
@@ -150,22 +88,6 @@ Stock is decremented when the order is **created**, before payment, and is not g
 #### Order status lifecycle
 
 The admin can set any status at any time; the API does not enforce an order between them. The intended progression is:
-
-```mermaid
-stateDiagram-v2
-    [*] --> PENDING: order created
-    PENDING --> CONFIRMED: payment verified
-    CONFIRMED --> IN_PROGRESS
-    IN_PROGRESS --> SENT_TO_KITCHEN
-    SENT_TO_KITCHEN --> READY_FOR_DELIVERY
-    READY_FOR_DELIVERY --> SENT_TO_DELIVERY
-    SENT_TO_DELIVERY --> DELIVERED_TO_CUSTOMER
-    PENDING --> CANCELLED
-    CONFIRMED --> CANCELLED
-    DELIVERED_TO_CUSTOMER --> [*]
-    CANCELLED --> [*]
-```
-
 The user's view of the status is real-time only in the sense that the frontend can poll `GET /orders/my-orders`; there are no WebSockets.
 
 #### Account lifecycle
@@ -228,18 +150,6 @@ Inside a feature, files are split by role:
 | `index.ts` | The feature's public exports |
 
 ### Data flow
-
-```mermaid
-flowchart LR
-    Page["Page / component"] --> Hook["useLogin()<br/>(TanStack Query)"]
-    Hook --> Api["authApi.login()"]
-    Api --> Axios["apiClient (axios)<br/>adds Bearer token"]
-    Axios --> Backend["Express API"]
-    Backend --> Axios
-    Axios -- "401 → clear token, go to /login" --> Page
-    Hook -- "cache + toast" --> Page
-```
-
 - **Server state** (anything that comes from the API) is owned by TanStack Query, configured in `main.tsx` with a 5-minute stale time, one retry and no refetch on window focus.
 - **Auth state** is the token and user object in `localStorage`, written by `useLogin` / `useAdminLogin` and removed by `useLogout` or a 401 response.
 - **Forms** use React Hook Form with Zod schemas through `@hookform/resolvers`.
